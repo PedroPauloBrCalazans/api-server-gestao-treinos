@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Usuario {
+  id String @id @default(uuid())
+  planoTreino PlanoTreino[]
+}
+
+model PlanoTreino {
+  id String @id @default(uuid())
+  name String
+  userId String
+  user Usuario @relation(fields: [userId], references: [id])
+  diaPlanoTreinos DiaPlanoTreino[]
+  isActive Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum DiaSemana {
+  DOMINGO
+  SEGUNDA
+  TERÇA
+  QUARTA
+  QUINTA
+  SEXTA
+  SABADO
+}
+
+model DiaPlanoTreino {
+  id String @id @default(uuid())
+  name String
+  planoTreinoId String
+  planoTreino PlanoTreino @relation(fields: [planoTreinoId], references: [id])
+  isRest Boolean @default(false)
+  weekDay DiaSemana
+  exercises TreinoExercicios[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TreinoExercicios {
+  id String @id @default(uuid())
+  name String
+  order Int
+  diaPlanoTreinoId String
+  diaPlanoTreino DiaPlanoTreino @relation(fields: [diaPlanoTreinoId], references: [id])
+  sets Int
+  reps Int
+  restTimeInSeconds Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
