@@ -14,19 +14,19 @@ datasource db {
 }
 
 model Usuario {
-  id String @id @default(uuid())
+  id          String        @id @default(uuid())
   planoTreino PlanoTreino[]
 }
 
 model PlanoTreino {
-  id String @id @default(uuid())
-  name String
-  userId String
-  user Usuario @relation(fields: [userId], references: [id])
+  id              String           @id @default(uuid())
+  name            String
+  userId          String
+  user            Usuario          @relation(fields: [userId], references: [id])
   diaPlanoTreinos DiaPlanoTreino[]
-  isActive Boolean @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 }
 
 enum DiaSemana {
@@ -40,26 +40,26 @@ enum DiaSemana {
 }
 
 model DiaPlanoTreino {
-  id String @id @default(uuid())
-  name String
+  id            String             @id @default(uuid())
+  name          String
   planoTreinoId String
-  planoTreino PlanoTreino @relation(fields: [planoTreinoId], references: [id])
-  isRest Boolean @default(false)
-  weekDay DiaSemana
-  exercises TreinoExercicios[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  planoTreino   PlanoTreino        @relation(fields: [planoTreinoId], references: [id])
+  isRest        Boolean            @default(false)
+  weekDay       DiaSemana
+  exercises     TreinoExercicios[]
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
 }
 
 model TreinoExercicios {
-  id String @id @default(uuid())
-  name String
-  order Int
-  diaPlanoTreinoId String
-  diaPlanoTreino DiaPlanoTreino @relation(fields: [diaPlanoTreinoId], references: [id])
-  sets Int
-  reps Int
+  id                String         @id @default(uuid())
+  name              String
+  order             Int
+  diaPlanoTreinoId  String
+  diaPlanoTreino    DiaPlanoTreino @relation(fields: [diaPlanoTreinoId], references: [id])
+  sets              Int
+  reps              Int
   restTimeInSeconds Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 }
