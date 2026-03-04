@@ -12,6 +12,7 @@ import {
 import z from "zod";
 import { auth } from "./lib/auth.js";
 import fastifyCors from "@fastify/cors";
+import fastifyApiReference from "@scalar/fastify-api-reference";
 
 const app = Fastify({
   logger: true,
@@ -37,13 +38,38 @@ await app.register(fastifySwagger, {
   transform: jsonSchemaTransform,
 });
 
-await app.register(fastifySwaggerUi, {
-  routePrefix: "/docs",
-});
-
 await app.register(fastifyCors, {
   origin: ["http://localhost:3000"],
   credentials: true,
+});
+
+await app.register(fastifyApiReference, {
+  routePrefix: "/docs",
+  configuration: {
+    sources: [
+      {
+        title: "Treinos-API",
+        slug: "TREINOS",
+        url: "/swagger.json",
+      },
+      {
+        title: "Auth API",
+        slug: "auth-api",
+        url: "/api/auth/open-api/generate-schema",
+      },
+    ],
+  },
+});
+
+app.withTypeProvider<ZodTypeProvider>().route({
+  method: "GET",
+  url: "/swagger.json",
+  schema: {
+    hide: true,
+  },
+  handler: async () => {
+    return app.swagger();
+  },
 });
 
 // Register authentication endpoint
