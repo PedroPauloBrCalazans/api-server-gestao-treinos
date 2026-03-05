@@ -51,15 +51,16 @@ enum DiaSemana {
 }
 
 model DiaPlanoTreino {
-  id            String             @id @default(uuid())
-  name          String
-  planoTreinoId String
-  planoTreino   PlanoTreino        @relation(fields: [planoTreinoId], references: [id])
-  isRest        Boolean            @default(false)
-  weekDay       DiaSemana
-  exercises     TreinoExercicios[]
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
+  id                         String             @id @default(uuid())
+  name                       String
+  planoTreinoId              String
+  planoTreino                PlanoTreino        @relation(fields: [planoTreinoId], references: [id])
+  isRest                     Boolean            @default(false)
+  weekDay                    DiaSemana
+  exercises                  TreinoExercicios[]
+  estimatedDurationInSeconds Int
+  createdAt                  DateTime           @default(now())
+  updatedAt                  DateTime           @updatedAt
 }
 
 model TreinoExercicios {
