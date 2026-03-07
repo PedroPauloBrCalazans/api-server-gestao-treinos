@@ -15,6 +15,7 @@ import fastifyApiReference from "@scalar/fastify-api-reference";
 import { DiaSemana } from "./generated/prisma/enums.js";
 import { CreateWorkoutPlan } from "./usecases/CreateWorkoutPlan.js";
 import { fromNodeHeaders } from "better-auth/node";
+import { NotFoundErros } from "./errors/index.js";
 
 const app = Fastify({
   logger: true,
@@ -117,27 +118,51 @@ app.withTypeProvider<ZodTypeProvider>().route({
         error: z.string(),
         code: z.string(),
       }),
+      500: z.object({
+        error: z.string(),
+        code: z.string(),
+      }),
+      404: z.object({
+        error: z.string(),
+        code: z.string(),
+      }),
     },
   },
   handler: async (request, reply) => {
-    const session = await auth.api.getSession({
-      headers: fromNodeHeaders(request.headers),
-    });
+    try {
+      const session = await auth.api.getSession({
+        headers: fromNodeHeaders(request.headers),
+      });
 
-    if (!session) {
-      return reply.status(401).send({
-        error: "Unauthorized",
-        code: "UNAUTHORIZED",
+      if (!session) {
+        return reply.status(401).send({
+          error: "Unauthorized",
+          code: "UNAUTHORIZED",
+        });
+      }
+
+      const createWorkoutPlan = new CreateWorkoutPlan();
+      const result = await createWorkoutPlan.execute({
+        userId: session.user.id,
+        name: request.body.name,
+        diaPlanoTreino: request.body.diaPlanoTreinos,
+      });
+      return reply.status(201).send(result);
+    } catch (error) {
+      app.log.error(error);
+
+      if (error instanceof NotFoundErros) {
+        return reply.status(404).send({
+          error: error.message,
+          code: "NOT_FOUND_ERROR",
+        });
+      }
+
+      return reply.status(500).send({
+        error: "Internal server error",
+        code: "SERVER_ERROR",
       });
     }
-
-    const createWorkoutPlan = new CreateWorkoutPlan();
-    const result = await createWorkoutPlan.execute({
-      userId: session.user.id,
-      name: request.body.name,
-      diaPlanoTreino: request.body.diaPlanoTreinos,
-    });
-    return reply.status(201).send(result);
   },
 });
 

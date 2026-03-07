@@ -1,3 +1,4 @@
+import { NotFoundErros } from "../errors/index.js";
 import { DiaSemana } from "../generated/prisma/enums.js";
 import { prisma } from "../lib/db.js";
 
@@ -76,7 +77,7 @@ export class CreateWorkoutPlan {
       });
 
       if (!result) {
-        throw new Error("Plano de treino não encontrado!");
+        throw new NotFoundErros("Plano de treino não encontrado!");
       }
 
       return result;
@@ -85,5 +86,5 @@ export class CreateWorkoutPlan {
 }
 
 //Transaction = ponto positivo dos BD relacionais, garanto atomicidade, vc atualiza e cria ou não faz nenhum dos dois, caso o banco cai ele desfaz a atualização
-//Controller = valida formato de dados e formatações
-//UseCases = valida regra de negocios
+//Controller = valida formato de dados e formatações, na controller lida com os erros já pode usar o try
+//UseCases = valida regra de negocios, só lança o erro com try/catch diretamente na rota
