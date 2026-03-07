@@ -13,7 +13,8 @@ import { auth } from "./lib/auth.js";
 import fastifyCors from "@fastify/cors";
 import fastifyApiReference from "@scalar/fastify-api-reference";
 import { DiaSemana } from "./generated/prisma/enums.js";
-import { error } from "console";
+import { CreateWorkoutPlan } from "./usecases/CreateWorkoutPlan.js";
+import { fromNodeHeaders } from "better-auth/node";
 
 const app = Fastify({
   logger: true,
@@ -68,7 +69,7 @@ app.withTypeProvider<ZodTypeProvider>().route({
   schema: {
     body: z.object({
       name: z.string().trim().min(1),
-      diaPlanoTreino: z.array(
+      diaPlanoTreinos: z.array(
         z.object({
           name: z.string().trim().min(1),
           weekDay: z.enum(DiaSemana),
@@ -90,7 +91,7 @@ app.withTypeProvider<ZodTypeProvider>().route({
       201: z.object({
         id: z.uuid(),
         name: z.string().trim().min(1),
-        diaPlanoTreino: z.array(
+        diaPlanoTreinos: z.array(
           z.object({
             name: z.string().trim().min(1),
             weekDay: z.enum(DiaSemana),
@@ -112,9 +113,32 @@ app.withTypeProvider<ZodTypeProvider>().route({
         error: z.string(),
         code: z.string(),
       }),
+      401: z.object({
+        error: z.string(),
+        code: z.string(),
+      }),
     },
   },
-  handler: async (request, reply) => {},
+  handler: async (request, reply) => {
+    const session = await auth.api.getSession({
+      headers: fromNodeHeaders(request.headers),
+    });
+
+    if (!session) {
+      return reply.status(401).send({
+        error: "Unauthorized",
+        code: "UNAUTHORIZED",
+      });
+    }
+
+    const createWorkoutPlan = new CreateWorkoutPlan();
+    const result = await createWorkoutPlan.execute({
+      userId: session.user.id,
+      name: request.body.name,
+      diaPlanoTreino: request.body.diaPlanoTreinos,
+    });
+    return reply.status(201).send(result);
+  },
 });
 
 app.withTypeProvider<ZodTypeProvider>().route({
